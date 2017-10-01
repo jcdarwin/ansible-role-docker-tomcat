@@ -1,7 +1,7 @@
 mebooks.ansible-role-docker-tomcat
 ==================================
 
-Install [Gollum](https://github.com/gollum/) using the [tomcat:alpine docker image](https://hub.docker.com/_/tomcat/).
+Installs Tomcat using the [tomcat:alpine docker image](https://hub.docker.com/_/tomcat/).
 
 We presume the use of [Traefik](traefik.io) as our reverse proxy, and use git to back our wiki content up to a repository.
 
