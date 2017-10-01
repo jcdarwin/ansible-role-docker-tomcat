@@ -1,0 +1,3 @@
+---
+# defaults file for mebooks.ansible-role-docker-tomcat
+domain: domain.tld

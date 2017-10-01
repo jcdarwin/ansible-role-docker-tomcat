@@ -1,0 +1,32 @@
+---
+# tasks file for mebooks.ansible-role-docker-tomcat
+
+- name: Ensure tomcat directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - /etc/tomcat
+  - /etc/tomcat/webapps
+  tags:
+  - traefik
+  - tomcat
+  - docker
+
+# https://hub.docker.com/_/tomcat/
+- name: Deploy tomcat container
+  docker_container:
+    name: tomcat
+    image: tomcat:alpine
+    restart_policy: unless-stopped
+    volumes:
+    - /etc/tomcat/webapps:/usr/local/tomcat/webapps:rw
+    labels:
+      traefik.enable: "true"
+      traefik.backend: epubcheck
+      traefik.frontend.rule: "Host:epubcheck.{{ domain }}; AddPrefix: /epubcheck"
+      traefik.port: "8080"
+  tags:
+  - traefik
+  - tomcat
+  - docker
