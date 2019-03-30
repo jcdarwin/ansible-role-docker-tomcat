@@ -27,7 +27,8 @@ It's running on Docker.
 Role Variables
 --------------
 
-- `domain` defaults to *domain.tld*
+- `tomcat.domain` defaults to *domain.tld*
+- `tomcat.source`: defaults to *domain.tld*
 
 Dependencies
 ------------
@@ -45,16 +46,21 @@ Example Playbook
   become_method: sudo
 
   vars:
-    traefik_testing: true
-    owner: administrator
-    domain: mebooks.co.nz
-    email: mebooks.support@gmail.com
-    users:
-     # owner_password / owner_password_encrypted are defined in the unversioned group_vars/remote
-    - username: "{{ owner }}"
-      password: "{{ owner_password }}"
-      acl:
-      - traefik
+    traefik:
+      traefik_testing: true
+      owner: administrator
+      domain: mebooks.co.nz
+      email: mebooks.support@gmail.com
+      users:
+      # owner_password / owner_password_encrypted are defined in the unversioned group_vars/remote
+      - username: "{{ owner }}"
+        password: "{{ owner_password }}"
+        acl:
+        - traefik
+
+    tomcat:
+      domain: mebooks.co.nz
+      source: mebooks.co.nz
 
   roles:
     # We presume we've already run ansible-role-users and ansible-role-common

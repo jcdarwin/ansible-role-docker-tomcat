@@ -1,6 +1,13 @@
 ---
 # tasks file for mebooks.ansible-role-docker-tomcat
 
+- name: Debug tomcat var
+  debug: var=tomcat
+  tags:
+  - traefik
+  - tomcat
+  - docker
+
 - name: Ensure tomcat directories exist
   file:
     path: "{{ item }}"
@@ -21,11 +28,13 @@
     restart_policy: unless-stopped
     volumes:
     - /etc/tomcat/webapps:/usr/local/tomcat/webapps:rw
+    - /etc/tomcat/temp:/usr/local/tomcat/temp:rw
     labels:
       traefik.enable: "true"
       traefik.backend: epubcheck
-      traefik.frontend.rule: "Host:epubcheck.{{ domain }}; AddPrefix: /epubcheck"
+      traefik.frontend.rule: "Host:epubcheck.{{ tomcat.domain }}; AddPrefix: /epubcheck"
       traefik.port: "8080"
+      com.datadoghq.ad.logs: '[{"source": "do.mebooks.co.nz", "service": "tomcat"}]'
   tags:
   - traefik
   - tomcat
