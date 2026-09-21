@@ -15,6 +15,7 @@
   with_items:
   - /etc/tomcat
   - /etc/tomcat/webapps
+  - /etc/tomcat/temp
   tags:
   - traefik
   - tomcat
@@ -35,6 +36,33 @@
       traefik.frontend.rule: "Host:epubcheck.{{ tomcat.domain }}; AddPrefix: /epubcheck"
       traefik.port: "8080"
       com.datadoghq.ad.logs: '[{"source": "do.mebooks.co.nz", "service": "tomcat"}]'
+  tags:
+  - traefik
+  - tomcat
+  - docker
+
+# ###############
+# # cron jobs
+- name: Set a weekly cron job to clear out the tomcat temp directory
+  action: template
+    src=templates/cron_clear_temp.j2
+    dest=/etc/cron.weekly/tomcat_clear_temp
+    mode=0755
+  tags:
+  - traefik
+  - tomcat
+  - docker
+
+- name: Check that our cron is valid
+  command: run-parts --test --verbose /etc/cron.weekly
+  register: result
+  tags:
+  - traefik
+  - tomcat
+  - docker
+
+- name: Show the result of our cron
+  debug: var=result
   tags:
   - traefik
   - tomcat

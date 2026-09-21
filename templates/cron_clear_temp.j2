@@ -1,0 +1,6 @@
+#!/bin/bash
+mkdir -p /var/log/cron.weekly
+
+echo "[`date`] Clearing tomcat temp directory..." >> /var/log/cron.weekly/clear_temp.log
+find /etc/tomcat/temp/ -mindepth 1 -delete
+echo "[`date`] Tomcat temp directory cleared." >> /var/log/cron.weekly/clear_temp.log
