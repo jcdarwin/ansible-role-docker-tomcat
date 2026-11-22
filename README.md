@@ -1,9 +1,10 @@
 mebooks.ansible-role-docker-tomcat
 ==================================
 
-Installs Tomcat using the [tomcat:alpine docker image](https://hub.docker.com/_/tomcat/).
+Runs EPUBCheck as a web service: a Tomcat container from an image built with
+[epubcheck-web](https://github.com/jcdarwin/epubcheck-web), routed by Traefik at `epubcheck.<domain>`.
 
-We presume the use of [Traefik](traefik.io) as our reverse proxy, and use git to back our wiki content up to a repository.
+We presume the use of [Traefik](traefik.io) as our reverse proxy,.
 
 We assume that we've probably run:
 
@@ -15,7 +16,12 @@ The above all chain as dependencies of our main dependency:
 
 * [ansible-role-docker-traefik](https://github.com/jcdarwin/ansible-role-docker-traefik)
 
-We mount the webapps content from: `/etc/tomcat/webapps`
+The image contains the webapp, so nothing is mounted from the host. The image isn't on a registry:
+build it, then load it on the host before running the role:
+
+    docker save mebooks/epubcheck:5.4.0-1 | gzip | ssh deploy@host 'gunzip | sudo docker load'
+
+The container's log is rotated (`max-size: 10m`, `max-file: 5`). Tomcat logs only to the console.
 
 Requirements
 ------------
@@ -29,6 +35,7 @@ Role Variables
 
 - `tomcat.domain` defaults to *domain.tld*
 - `tomcat.source`: defaults to *domain.tld*
+- `tomcat.image`: the image to run; defaults to *epubcheck-web:latest*. Pin a tag, e.g. `mebooks/epubcheck:5.4.0-1`
 
 Dependencies
 ------------
@@ -61,6 +68,7 @@ Example Playbook
     tomcat:
       domain: mebooks.co.nz
       source: mebooks.co.nz
+      image: mebooks/epubcheck:5.4.0-1
 
   roles:
     # We presume we've already run ansible-role-users and ansible-role-common
