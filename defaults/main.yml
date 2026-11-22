@@ -3,3 +3,5 @@
 tomcat:
   domain: domain.tld
   source: domain.tld
+  # A local image built from epubcheck-web (https://github.com/jcdarwin/epubcheck-web).
+  image: epubcheck-web:latest

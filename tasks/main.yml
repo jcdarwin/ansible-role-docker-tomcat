@@ -8,61 +8,34 @@
   - tomcat
   - docker
 
-- name: Ensure tomcat directories exist
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-  - /etc/tomcat
-  - /etc/tomcat/webapps
-  - /etc/tomcat/temp
-  tags:
-  - traefik
-  - tomcat
-  - docker
-
-# https://hub.docker.com/_/tomcat/
+# The image (an epubcheck-web build) contains the webapp, so nothing is mounted from the host.
+# It isn't on a registry: load it on the host first (docker save | ssh … docker load).
 - name: Deploy tomcat container
   docker_container:
     name: tomcat
-    image: tomcat:alpine
+    image: "{{ tomcat.image }}"
+    pull: false
     restart_policy: unless-stopped
-    volumes:
-    - /etc/tomcat/webapps:/usr/local/tomcat/webapps:rw
-    - /etc/tomcat/temp:/usr/local/tomcat/temp:rw
+    log_driver: json-file
+    log_options:
+      max-size: 10m
+      max-file: "5"
     labels:
       traefik.enable: "true"
       traefik.backend: epubcheck
       traefik.frontend.rule: "Host:epubcheck.{{ tomcat.domain }}; AddPrefix: /epubcheck"
       traefik.port: "8080"
-      com.datadoghq.ad.logs: '[{"source": "do.mebooks.co.nz", "service": "tomcat"}]'
   tags:
   - traefik
   - tomcat
   - docker
 
-# ###############
-# # cron jobs
-- name: Set a weekly cron job to clear out the tomcat temp directory
-  action: template
-    src=templates/cron_clear_temp.j2
-    dest=/etc/cron.weekly/tomcat_clear_temp
-    mode=0755
-  tags:
-  - traefik
-  - tomcat
-  - docker
-
-- name: Check that our cron is valid
-  command: run-parts --test --verbose /etc/cron.weekly
-  register: result
-  tags:
-  - traefik
-  - tomcat
-  - docker
-
-- name: Show the result of our cron
-  debug: var=result
+# The servlet deletes its temp files after each request, so the weekly clean-up of the old
+# /etc/tomcat/temp mount isn't needed.
+- name: Remove the weekly tomcat temp clean-up
+  file:
+    path: /etc/cron.weekly/tomcat_clear_temp
+    state: absent
   tags:
   - traefik
   - tomcat
